@@ -56,7 +56,7 @@ export class OnboardingUseCases {
                 if (plan) {
                     if (Number(plan.price) === 0) {
                         // Activate free plan immediately
-                        await SubscriptionService.activatePlan(church.id, plan.id, tenant.id);
+                        await SubscriptionService.activatePlan(church.id, plan.id, tenant.id, trx);
                     } else {
                         // Initiate payment for paid plan
                         // Note: Using the user.id as memberId for the initial payment
@@ -67,7 +67,8 @@ export class OnboardingUseCases {
                             data.phoneNumber,
                             church.id,
                             tenant.id,
-                            plan.id
+                            plan.id,
+                            trx
                         );
                     }
                 }
