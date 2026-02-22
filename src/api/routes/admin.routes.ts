@@ -32,8 +32,7 @@ router.get('/analytics', async (req: IAuthRequest, res: Response) => {
             .select(db.raw("to_char(created_at, 'Mon') as name"))
             .count('id as tenants')
             .where('created_at', '>=', sixMonthsAgo)
-            .groupBy('name')
-            .orderBy(db.raw("min(created_at)"), 'asc');
+            .orderByRaw('min(created_at) asc');
 
         res.status(200).json({
             tenants: parseInt(tenantCount?.count as string || '0'),
