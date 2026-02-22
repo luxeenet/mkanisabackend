@@ -85,4 +85,64 @@ router.delete('/members/:id', async (req: IAuthRequest, res: Response) => {
     }
 });
 
+// --- Enterprise Branch Hierarchy ---
+
+// 6. List Branches for HQ
+router.get('/branches', async (req: IAuthRequest, res: Response) => {
+    try {
+        const { churchId } = req.user!;
+        const branches = await db('churches').where({ parent_id: churchId });
+        res.status(200).json(branches);
+    } catch (err: any) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// 7. Create Sub-Branch
+router.post('/branches', async (req: IAuthRequest, res: Response) => {
+    try {
+        const { churchId, tenantId } = req.user!;
+        const { name, location, pastor_name } = req.body; // Using simple body for now
+
+        const [branch] = await db('churches').insert({
+            name,
+            tenant_id: tenantId,
+            parent_id: churchId,
+            type: 'BRANCH',
+            settings: JSON.stringify({ location, pastor_name })
+        }).returning('*');
+
+        res.status(201).json(branch);
+    } catch (err: any) {
+        res.status(400).json({ message: err.message });
+    }
+});
+
+// 8. Branch Analytics (HQ checking branch performance)
+router.get('/branches/:id/analytics', async (req: IAuthRequest, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { churchId } = req.user!;
+
+        // Verify that this branch belongs to the HQ
+        const branch = await db('churches').where({ id, parent_id: churchId }).first();
+        if (!branch) return res.status(404).json({ message: 'Branch not found or no access' });
+
+        const memberCount = await db('members').where({ church_id: id }).count('id as count').first();
+        const transactionSum = await db('transactions')
+            .where({ church_id: id, status: 'SUCCESS' })
+            .sum('amount as total')
+            .first();
+
+        res.status(200).json({
+            branchId: id,
+            name: branch.name,
+            members: parseInt(memberCount?.count as string || '0'),
+            totalCollections: parseFloat(transactionSum?.total as string || '0'),
+        });
+    } catch (err: any) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 export default router;

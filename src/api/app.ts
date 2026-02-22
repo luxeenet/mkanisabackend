@@ -11,6 +11,8 @@ import churchRoutes from '@api/routes/church.routes';
 import paymentRoutes from '@api/routes/payment.routes';
 import smsRoutes from '@api/routes/sms.routes';
 import onboardingRoutes from '@api/routes/onboarding.routes';
+import ussdRoutes from '@api/routes/ussd.routes';
+import adminRoutes from '@api/routes/admin.routes';
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.use('/api/v1/church', authMiddleware, churchRoutes);
 app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/sms', authMiddleware, smsRoutes);
 app.use('/api/v1/onboarding', onboardingRoutes);
+app.use('/api/v1/ussd', ussdRoutes);
+app.use('/api/v1/admin', authMiddleware, adminRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
