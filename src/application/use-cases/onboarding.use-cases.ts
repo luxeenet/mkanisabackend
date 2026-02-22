@@ -41,11 +41,17 @@ export class OnboardingUseCases {
             // 4. Handle Initial Subscription
             let paymentResult = null;
             if (data.planId) {
-                // Try to find the plan by ID or partial name (e.g. 'kagash')
-                const plan = await trx('plans')
-                    .where({ id: data.planId })
-                    .orWhere('name', 'ilike', `%${data.planId.split('-')[0]}%`)
-                    .first();
+                // Try to find the plan by ID (if valid UUID) or partial name (e.g. 'kagash')
+                const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.planId);
+
+                const query = trx('plans');
+                if (isUuid) {
+                    query.where({ id: data.planId });
+                } else {
+                    query.where('name', 'ilike', `%${data.planId.split('-')[0]}%`);
+                }
+
+                const plan = await query.first();
 
                 if (plan) {
                     if (Number(plan.price) === 0) {
