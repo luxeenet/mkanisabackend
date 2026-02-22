@@ -85,4 +85,10 @@ export class OnboardingUseCases {
             .where('churches.name', 'ilike', `%${query}%`)
             .select('churches.name', 'tenants.slug', 'tenants.id');
     }
+
+    async resolveBySlug(slug: string) {
+        return await db('tenants')
+            .where({ slug })
+            .first();
+    }
 }

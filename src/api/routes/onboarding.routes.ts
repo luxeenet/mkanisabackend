@@ -25,4 +25,15 @@ router.get('/churches', async (req: Request, res: Response) => {
     }
 });
 
+router.get('/resolve/:slug', async (req: Request, res: Response) => {
+    try {
+        const slug = req.params.slug as string;
+        const tenant = await onboardingUseCases.resolveBySlug(slug);
+        if (!tenant) return res.status(404).json({ message: 'Tenant not found' });
+        res.status(200).json(tenant);
+    } catch (err: any) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 export default router;
