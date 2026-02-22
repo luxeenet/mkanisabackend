@@ -13,6 +13,7 @@ import smsRoutes from '@api/routes/sms.routes';
 import onboardingRoutes from '@api/routes/onboarding.routes';
 import ussdRoutes from '@api/routes/ussd.routes';
 import adminRoutes from '@api/routes/admin.routes';
+import memberRoutes from '@api/routes/member.routes';
 
 const app = express();
 
@@ -44,6 +45,7 @@ app.use('/api/v1/sms', authMiddleware, smsRoutes);
 app.use('/api/v1/onboarding', onboardingRoutes);
 app.use('/api/v1/ussd', ussdRoutes);
 app.use('/api/v1/admin', authMiddleware, adminRoutes);
+app.use('/api/v1/member', authMiddleware, memberRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {

@@ -15,11 +15,33 @@ router.get('/analytics', async (req: IAuthRequest, res: Response) => {
             .sum('amount as total')
             .first();
 
+        // 4. Time-series data (Last 6 months)
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+        const monthlyRevenue = await db('transactions')
+            .select(db.raw("to_char(created_at, 'Mon') as name"))
+            .sum('amount as revenue')
+            .count('id as transactions')
+            .where('created_at', '>=', sixMonthsAgo)
+            .where({ status: 'SUCCESS' })
+            .groupBy('name')
+            .orderByRaw('min(created_at) asc');
+
+        const monthlyTenants = await db('tenants')
+            .select(db.raw("to_char(created_at, 'Mon') as name"))
+            .count('id as tenants')
+            .where('created_at', '>=', sixMonthsAgo)
+            .groupBy('name')
+            .orderBy(db.raw("min(created_at)"), 'asc');
+
         res.status(200).json({
             tenants: parseInt(tenantCount?.count as string || '0'),
             members: parseInt(memberCount?.count as string || '0'),
             totalRevenue: parseFloat(transactionSum?.total as string || '0'),
-            currency: 'TZS'
+            currency: 'TZS',
+            revenueSeries: monthlyRevenue,
+            tenantSeries: monthlyTenants
         });
     } catch (err: any) {
         res.status(500).json({ message: err.message });
