@@ -8,7 +8,7 @@ export interface ITenantRequest extends Request {
 export const tenantMiddleware = (req: ITenantRequest, res: Response, next: NextFunction) => {
     const tenantId = req.header('X-Tenant-ID') || req.query.tenantId as string;
 
-    if (!tenantId && req.path !== '/health' && req.path !== '/') {
+    if (!tenantId && req.path !== '/health' && req.path !== '/' && !req.path.includes('/onboarding')) {
         logger.warn(`Missing Tenant ID for path: ${req.path}`);
     }
 
