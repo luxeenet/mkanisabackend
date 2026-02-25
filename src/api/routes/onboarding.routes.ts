@@ -36,4 +36,14 @@ router.get('/resolve/:slug', async (req: Request, res: Response) => {
     }
 });
 
+router.post('/setup-admin', async (req: Request, res: Response) => {
+    try {
+        const result = await onboardingUseCases.setupAdmin();
+        res.status(200).json(result);
+    } catch (err: any) {
+        logger.error(`Error during Super Admin setup: ${err.message}`);
+        res.status(400).json({ message: err.message });
+    }
+});
+
 export default router;

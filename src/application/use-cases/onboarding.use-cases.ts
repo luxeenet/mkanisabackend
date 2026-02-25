@@ -98,4 +98,45 @@ export class OnboardingUseCases {
             .where({ slug })
             .first();
     }
+
+    async setupAdmin() {
+        return await db.transaction(async (trx) => {
+            // 1. Create a Platform/System Tenant if it doesn't exist
+            let platformTenant = await trx('tenants').where({ slug: 'system' }).first();
+            if (!platformTenant) {
+                [platformTenant] = await trx('tenants').insert({
+                    name: 'M-KANISA Platform',
+                    slug: 'system',
+                    is_active: true
+                }).returning('*');
+            }
+
+            // 2. Create Super Admin User
+            const existingAdmin = await trx('users').where({ is_super_admin: true }).first();
+            if (existingAdmin) {
+                throw new Error('Super Admin already exists. Please use the login page.');
+            }
+
+            const passwordHash = await argon2.hash('Password@123');
+            const [user] = await trx('users').insert({
+                tenant_id: platformTenant.id,
+                full_name: 'Platform Administrator',
+                email: 'admin@mkanisa.com',
+                phone_number: '255000000000',
+                password_hash: passwordHash,
+                is_active: true,
+                is_verified: true,
+                is_super_admin: true
+            }).returning('*');
+
+            return {
+                message: 'Super Admin created successfully',
+                credentials: {
+                    identifier: 'admin@mkanisa.com',
+                    password: 'Password@123'
+                },
+                user
+            };
+        });
+    }
 }
