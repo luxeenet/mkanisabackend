@@ -65,8 +65,9 @@ export class AuthUseCases {
             userId: user.id,
             tenantId: user.tenantId,
             churchId: user.churchId,
-            role: user.is_super_admin ? 'SUPER_ADMIN' : 'ADMIN',
+            role: user.isSuperAdmin ? 'SUPER_ADMIN' : 'ADMIN',
         });
+
 
         return { user, accessToken };
     }
