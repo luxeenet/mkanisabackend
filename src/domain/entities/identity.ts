@@ -23,6 +23,8 @@ export interface IUser {
     roleId?: string;
     isActive: boolean;
     isVerified: boolean;
+    is_super_admin?: boolean;
     createdAt: Date;
+
     updatedAt: Date;
 }

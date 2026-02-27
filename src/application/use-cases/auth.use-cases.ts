@@ -45,7 +45,13 @@ export class AuthUseCases {
     }
 
     async login(data: any, tenantId: string) {
-        const user = await this.userRepository.findByPhoneNumber(data.phoneNumber, tenantId);
+        let user = await this.userRepository.findByPhoneNumber(data.phoneNumber, tenantId);
+
+        // If not found by phone, try by email (especially for Super Admin)
+        if (!user && data.email) {
+            user = await this.userRepository.findByEmail(data.email, tenantId);
+        }
+
         if (!user) {
             throw new Error('Invalid credentials');
         }
@@ -59,9 +65,10 @@ export class AuthUseCases {
             userId: user.id,
             tenantId: user.tenantId,
             churchId: user.churchId,
-            role: 'ADMIN', // Should come from DB
+            role: user.is_super_admin ? 'SUPER_ADMIN' : 'ADMIN',
         });
 
         return { user, accessToken };
     }
+
 }
