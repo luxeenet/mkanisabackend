@@ -24,4 +24,10 @@ export const config = {
     logging: {
         level: process.env.LOG_LEVEL || 'info',
     },
+    mmoja: {
+        apiUrl: process.env.MMOJA_API_URL || 'http://YOUR_API_URL/api',
+        apiId: process.env.MMOJA_API_ID,
+        apiPassword: process.env.MMOJA_API_PASSWORD,
+        senderId: process.env.MMOJA_SENDER_ID || 'ASMSC',
+    }
 };

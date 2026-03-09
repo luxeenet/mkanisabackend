@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { IAuthRequest } from '@api/middlewares/auth.middleware';
 import { SmsEngine } from '@infrastructure/queues/sms.engine';
+import { MmojaClient } from '@infrastructure/external/mmoja.client';
 import { logger } from '@services/logger';
 
 const router = Router();
@@ -21,6 +22,17 @@ router.post('/broadcast', async (req: IAuthRequest, res: Response) => {
     } catch (err: any) {
         logger.error(`SMS Broadcast Error: ${err.message}`);
         res.status(500).json({ message: 'Failed to queue SMS' });
+    }
+});
+
+// Check SMS Balance
+router.get('/balance', async (req: IAuthRequest, res: Response) => {
+    try {
+        const balance = await MmojaClient.checkBalance();
+        res.status(200).json(balance);
+    } catch (err: any) {
+        logger.error(`SMS Balance Check Error: ${err.message}`);
+        res.status(500).json({ message: 'Failed to fetch SMS balance' });
     }
 });
 

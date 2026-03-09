@@ -1,6 +1,7 @@
 import { Queue, Worker } from 'bullmq';
 import { config } from '@config/index';
 import { logger } from '@services/logger';
+import { MmojaClient } from '@infrastructure/external/mmoja.client';
 
 const redisConfig = {
     connection: {
@@ -23,13 +24,22 @@ export class SmsEngine {
     }
 }
 
-// Worker Implementation (usually in a separate process/file)
+// Worker Implementation
 export const smsWorker = new Worker('sms-queue', async (job) => {
     const { phone, message, churchId } = job.data;
-    logger.info(`Sending SMS to ${phone}: ${message}`);
+    logger.info(`Sending SMS via Mmoja to ${phone}: ${message}`);
 
-    // Implementation of Telco API (M-Pesa, Airtel, etc.) goes here
-    // await axios.post(provider_url, { recipient: phone, text: message });
-
-    return { success: true };
+    try {
+        const result = await MmojaClient.sendSms(phone, message);
+        if (result.status === 'S') {
+            logger.info(`SMS sent successfully to ${phone}. ID: ${result.message_id}`);
+            return { success: true, messageId: result.message_id };
+        } else {
+            logger.error(`Mmoja SMS fail for ${phone}: ${result.remarks}`);
+            throw new Error(`Mmoja SMS failed: ${result.remarks}`);
+        }
+    } catch (err: any) {
+        logger.error(`SMS Worker Error: ${err.message}`);
+        throw err; // Re-throw to allow BullMQ to retry based on job config
+    }
 }, redisConfig);
