@@ -41,7 +41,7 @@ export class AuthUseCases {
             role: 'MEMBER', // Default role for now
         });
 
-        return { user, accessToken };
+        return { user, access_token: accessToken };
     }
 
     async login(data: any, tenantId: string) {
@@ -69,7 +69,7 @@ export class AuthUseCases {
         });
 
 
-        return { user, accessToken };
+        return { user, access_token: accessToken };
     }
 
 }

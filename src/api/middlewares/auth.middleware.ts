@@ -27,7 +27,8 @@ export const authMiddleware = (req: IAuthRequest, res: Response, next: NextFunct
 
         req.user = decoded;
         next();
-    } catch (err) {
-        return res.status(401).json({ message: 'Invalid or expired token' });
+    } catch (err: any) {
+        logger.error(`Auth Middleware Error: ${err.message}`);
+        return res.status(401).json({ message: 'Invalid or expired token', error: err.message });
     }
 };
